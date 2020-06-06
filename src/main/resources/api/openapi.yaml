@@ -1,0 +1,1074 @@
+openapi: 3.0.3
+info:
+  title: Contacts API
+  description: A simple API, where a user can get a quick overview over all contacts resources. like person, skills...
+  termsOfService: http://example.com/terms/
+  contact:
+    name: API Support
+    url: http://www.example.com/support
+    email: support@example.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local server
+  - url: https://development.example.com
+    description: Development server
+  - url: https://staging.example.com
+    description: Staging server
+  - url: https://api.example.com
+    description: Production server
+paths:
+  /contacts:
+    post:
+      tags:
+        - contact
+      summary: Creates a contact and returns the contact ID
+      operationId: createContact
+      requestBody:
+        description: A contact to add
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HALExtendedContact'
+        required: true
+      responses:
+        '201':
+          description: Contact created
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HALExtendedContact'
+          headers:
+            Location:
+              schema:
+                type: string
+                format: url
+              description: location of the created ressource
+            Etag:
+              schema:
+                type: string
+              description: identify the specific version of the returned resource
+            Cache-Control:
+              schema:
+                type: string
+              description: cache expiry information
+          links:
+            GetContact:
+              $ref: '#/components/links/GetContact'
+            UpdateContact:
+              $ref: '#/components/links/UpdateContact'
+            DeleteContact:
+              $ref: '#/components/links/DeleteContact'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - write:contacts
+            - read:contacts
+    get:
+      tags:
+        - contact
+      summary: Returns contacts by skill ids
+      description: Returns contacts with skill ids or all contacts if no skill id is used
+      operationId: findAllContactsBySkillIds
+      responses:
+        '200':
+          description: A list of contacts
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HALContacts'
+          headers:
+            Etag:
+              schema:
+                type: string
+              description: identify the specific version of the returned resource
+            Cache-Control:
+              schema:
+                type: string
+              description: cache expiry information
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      parameters:
+        - name: skillIds
+          in: query
+          description: skill ids to match
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/SkillId'
+        - name: skillIdsMinMatch
+          in: query
+          description: minimum of skill ids to match ( from 1 to the count of skillIds)
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/IfNoneMatch'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - read:contacts
+  /contacts/{contactId}:
+    get:
+      tags:
+        - contact
+      summary: Gets a contact by ID
+      description: Returns a contact based on contact id
+      operationId: getContact
+      responses:
+        '200':
+          description: A contact
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HALExtendedContact'
+          headers:
+            Etag:
+              schema:
+                type: string
+              description: identify the specific version of the returned resource
+            Cache-Control:
+              schema:
+                type: string
+              description: cache expiry information
+          links:
+            UpdateContact:
+              $ref: '#/components/links/UpdateContact'
+            DeleteContact:
+              $ref: '#/components/links/DeleteContact'
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      parameters:
+        - $ref: '#/components/parameters/IfNoneMatch'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - read:contacts
+    put:
+      tags:
+        - contact
+      summary: Updates a contact with ID
+      description: Update a contact based on contact id
+      operationId: updateContact
+      requestBody:
+        description: contact to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HALExtendedContact'
+        required: true
+      parameters:
+        - $ref: '#/components/parameters/ifMatchContact'
+      responses:
+        '200':
+          description: Contact updated
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HALExtendedContact'
+          headers:
+            Etag:
+              schema:
+                type: string
+              description: identify the specific version of the returned resource
+            Cache-Control:
+              schema:
+                type: string
+              description: cache expiry information
+          links:
+            GetContact:
+              $ref: '#/components/links/GetContact'
+            UpdateContact:
+              $ref: '#/components/links/UpdateContact'
+            DeleteContact:
+              $ref: '#/components/links/DeleteContact'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '412':
+          $ref: '#/components/responses/PreconditionFailedError'
+        '428':
+          $ref: '#/components/responses/PreconditionRequiredError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - write:contacts
+            - read:contacts
+    delete:
+      tags:
+        - contact
+      summary: Deletes a contact with ID
+      description: Deletes a contact based on contact id
+      operationId: deleteContact
+      parameters:
+        - $ref: '#/components/parameters/ifMatchContact'
+      responses:
+        '204':
+          description: Contact deleted
+        '400':
+          description: Bad request
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          description: Contact not found
+        '412':
+          $ref: '#/components/responses/PreconditionFailedError'
+        '428':
+          $ref: '#/components/responses/PreconditionRequiredError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - write:contacts
+            - read:contacts
+    parameters:
+      - $ref: '#/components/parameters/contactId'
+  /contacts/{contactId}/skills/{skillId}:
+    put:
+      tags:
+        - contact
+      summary: Adds a skill to the contact
+      operationId: addSkillToContact
+      parameters:
+        - $ref: '#/components/parameters/ifMatchContact'
+      responses:
+        '201':
+          description: Contact's skill created
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HALExtendedContact'
+          headers:
+            Location:
+              schema:
+                type: string
+                format: url
+              description: location of the created ressource
+            Etag:
+              schema:
+                type: string
+              description: identify the specific version of the returned resource
+            Cache-Control:
+              schema:
+                type: string
+              description: cache expiry information
+          links:
+            RemoveSkillFromContact:
+              $ref: '#/components/links/RemoveSkillFromContact'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '412':
+          $ref: '#/components/responses/PreconditionFailedError'
+        '428':
+          $ref: '#/components/responses/PreconditionRequiredError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - write:contacts
+            - read:contacts
+            - read:skills
+    delete:
+      tags:
+        - contact
+      summary: Removes a skill from the contact
+      operationId: removeSkillFromContact
+      parameters:
+        - $ref: '#/components/parameters/ifMatchContact'
+      responses:
+        '200':
+          description: Contact's skill removed
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HALExtendedContact'
+          headers:
+            Location:
+              schema:
+                type: string
+                format: url
+              description: location of the created ressource
+            Etag:
+              schema:
+                type: string
+              description: identify the specific version of the returned resource
+            Cache-Control:
+              schema:
+                type: string
+              description: cache expiry information
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '412':
+          $ref: '#/components/responses/PreconditionFailedError'
+        '428':
+          $ref: '#/components/responses/PreconditionRequiredError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - write:contacts
+            - read:contacts
+            - read:skills
+    parameters:
+      - $ref: '#/components/parameters/contactId'
+      - $ref: '#/components/parameters/skillId'
+  /skills:
+    post:
+      tags:
+        - skill
+      summary: Creates a skill and returns the skill ID
+      operationId: createSkill
+      requestBody:
+        description: A skill to add
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Skill'
+        required: true
+      responses:
+        '201':
+          description: Skill created
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HALSkill'
+          headers:
+            Location:
+              schema:
+                type: string
+                format: url
+              description: location of the created ressource
+            Etag:
+              schema:
+                type: string
+              description: identify the specific version of the returned resource
+            Cache-Control:
+              schema:
+                type: string
+              description: cache expiry information
+          links:
+            GetSkill:
+              $ref: '#/components/links/GetSkill'
+            UpdateSkill:
+              $ref: '#/components/links/UpdateSkill'
+            DeleteSkill:
+              $ref: '#/components/links/DeleteSkill'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - write:skills
+            - read:skills
+    get:
+      tags:
+        - skill
+      summary: Returns all skills
+      description: Returns all skills
+      operationId: findAllSkills
+      responses:
+        '200':
+          description: A list of skills
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HALSkills'
+          headers:
+            Etag:
+              schema:
+                type: string
+              description: identify the specific version of the returned resource
+            Cache-Control:
+              schema:
+                type: string
+              description: cache expiry information
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/IfNoneMatch'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - read:skills
+  /skills/{skillId}:
+    get:
+      tags:
+        - skill
+      summary: Gets a skill by skill id
+      description: Returns a skill based on skill id
+      operationId: getSkillById
+      responses:
+        '200':
+          description: A skill
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HALSkill'
+          headers:
+            Etag:
+              schema:
+                type: string
+              description: identify the specific version of the returned resource
+            Cache-Control:
+              schema:
+                type: string
+              description: cache expiry information
+          links:
+            UpdateSkill:
+              $ref: '#/components/links/UpdateSkill'
+            DeleteSkill:
+              $ref: '#/components/links/DeleteSkill'
+        '304':
+          $ref: '#/components/responses/NotModified'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      parameters:
+        - $ref: '#/components/parameters/IfNoneMatch'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - read:skills
+    put:
+      tags:
+        - skill
+      summary: Updates a skill
+      operationId: updateSkillById
+      parameters:
+        - $ref: '#/components/parameters/ifMatchSkill'
+      requestBody:
+        description: skill to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Skill'
+        required: true
+      responses:
+        '200':
+          description: Skill updated
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/HALSkill'
+          headers:
+            Etag:
+              schema:
+                type: string
+              description: identify the specific version of the returned resource
+            Cache-Control:
+              schema:
+                type: string
+              description: cache expiry information
+          links:
+            GetSkill:
+              $ref: '#/components/links/GetSkill'
+            UpdateSkill:
+              $ref: '#/components/links/UpdateSkill'
+            DeleteSkill:
+              $ref: '#/components/links/DeleteSkill'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '412':
+          $ref: '#/components/responses/PreconditionFailedError'
+        '428':
+          $ref: '#/components/responses/PreconditionRequiredError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - write:skills
+            - read:skills
+    delete:
+      tags:
+        - skill
+      summary: Deletes a skill
+      operationId: deleteSkillById
+      parameters:
+        - $ref: '#/components/parameters/ifMatchSkill'
+      responses:
+        '204':
+          description: Skill deleted
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '412':
+          $ref: '#/components/responses/PreconditionFailedError'
+        '428':
+          $ref: '#/components/responses/PreconditionRequiredError'
+        default:
+          $ref: '#/components/responses/UnexpectedError'
+      security:
+        - BasicAuth: []
+        - OpenID:
+            - write:skills
+            - read:skills
+    parameters:
+      - $ref: '#/components/parameters/skillId'
+components:
+  schemas:
+    ContactId:
+      title: ContactId
+      type: string
+      format: uuid
+      readOnly: true
+    Contact:
+      title: Contact
+      type: object
+      required:
+        - firstname
+        - lastname
+      properties:
+        id:
+          $ref: '#/components/schemas/ContactId'
+        firstname:
+          type: string
+          minLength: 1
+          maxLength: 40
+        lastname:
+          type: string
+          minLength: 1
+          maxLength: 80
+        fullname:
+          type: string
+          minLength: 3
+          maxLength: 121
+          readOnly: true
+        email:
+          type: string
+          format: email
+          pattern: '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$'
+          minLength: 3
+          maxLength: 320
+      description: Contact with simple fields
+    Phone:
+      title: Phone
+      type: object
+      required:
+        - number
+      properties:
+        label:
+          type: string
+          enum: [home, work, mobile, other]
+          default: mobile
+        number:
+          type: string
+          format: telephone
+          pattern: '^(\+?( |-|\.)?\d{1,2}( |-|\.)?)?(\(?\d{3}\)?|\d{3})( |-|\.)?(\d{3}( |-|\.)?\d{4})$'
+          minLength: 4
+          maxLength: 20
+      description: Phone number with label (home, work, mobile, other)
+    PostalAddress:
+      title: PostalAddress
+      type: object
+      required:
+        - country
+        - postalCode
+        - street
+      properties:
+        country:
+          type: string
+          minLength: 2
+          maxLength: 100
+        locality:
+          type: string
+          minLength: 1
+          maxLength: 100
+        region:
+          type: string
+          minLength: 1
+          maxLength: 100
+        postOfficeBoxNumber:
+          type: string
+          minLength: 1
+          maxLength: 100
+        postalCode:
+          type: string
+          minLength: 1
+          maxLength: 32
+        street:
+          type: string
+          minLength: 1
+          maxLength: 100
+      description: Postal address
+    SkillId:
+      title: SkillId
+      type: integer
+      format: int64
+      minimum: 0
+      readOnly: true
+    Skill:
+      title: Skill
+      type: object
+      required:
+        - name
+        - level
+      properties:
+        id:
+          $ref: '#/components/schemas/SkillId'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        level:
+          type: string
+          minLength: 1
+          maxLength: 100
+      description: Skill
+    Error:
+      title: Error
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: url
+          description: A URL reference [RFC3986] that identifies the problem type
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem
+        instance:
+          type: string
+          format: url
+          description: A URL reference that identifies the specific occurrence of the problem
+        status:
+          type: integer
+          format: int32
+          minLength: 1
+          description: The HTTP status code
+      description: Error response body, a problem details object [RFC7807]
+    HALContact:
+      title: HALContact
+      allOf:
+        - $ref: '#/components/schemas/Contact'
+        - $ref: '#/components/schemas/HALSelfSkillsLinks'
+      description: Contact object with HAL links
+    HALContacts:
+      title: HALContacts
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - type: object
+          properties:
+            _embedded:
+              type: object
+              properties:
+                contacts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/HALContact'
+      description: Contacts object with HAL links
+    HALExtendedContact:
+      title: HALExtendedContact
+      allOf:
+        - $ref: '#/components/schemas/Contact'
+        - $ref: '#/components/schemas/HALSelfLink'
+        - $ref: '#/components/schemas/HALEmbeddedSkills'
+        - type: object
+          properties:
+            address:
+              $ref: '#/components/schemas/PostalAddress'
+            phones:
+              type: array
+              items:
+                $ref: '#/components/schemas/Phone'
+      description: Extended contact object with HAL links
+    HALSkill:
+      title: HALSkill
+      allOf:
+        - $ref: '#/components/schemas/Skill'
+        - $ref: '#/components/schemas/HALSelfLink'
+      description: Skill object with HAL links
+    HALSelfLink:
+      type: object
+      properties:
+        _links:
+          type: object
+          readOnly: true
+          required:
+            - self
+          properties:
+            self:
+              $ref: '#/components/schemas/Href'
+      description: HAL self links
+    HALSelfSkillsLinks:
+      type: object
+      readOnly: true
+      properties:
+        _links:
+          type: object
+          readOnly: true
+          required:
+            - self
+          properties:
+            self:
+              $ref: '#/components/schemas/Href'
+            skills:
+              $ref: '#/components/schemas/Href'
+      description: HAL skills links
+    HALSkills:
+      title: HALSkills
+      allOf:
+        - $ref: '#/components/schemas/Pagination'
+        - $ref: '#/components/schemas/HALEmbeddedSkills'
+      description: Skill object with HAL links
+    HALEmbeddedSkills:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          readOnly: true
+          properties:
+            skills:
+              type: array
+              items:
+                $ref: '#/components/schemas/HALSkill'
+      description: Embedded skills link
+    Pagination:
+      type: object
+      required:
+        - _links
+      properties:
+        _links:
+          type: object
+          readOnly: true
+          required:
+            - self
+            - first
+            - last
+          properties:
+            self:
+              $ref: '#/components/schemas/Href'
+            prev:
+              $ref: '#/components/schemas/Href'
+            next:
+              $ref: '#/components/schemas/Href'
+            first:
+              $ref: '#/components/schemas/Href'
+            last:
+              $ref: '#/components/schemas/Href'
+        page:
+          $ref: '#/components/schemas/Page'
+      description: pagination object
+    Page:
+      type: object
+      required:
+        - number
+        - totalElements
+        - size
+        - totalPages
+      properties:
+        number:
+          $ref: '#/components/schemas/PageNumber'
+        totalElements:
+          type: integer
+          format: int64
+          minimum: 0
+          description: total number of elements
+        size:
+          $ref: '#/components/schemas/PageSize'
+        totalPages:
+          type: integer
+          format: int64
+          minimum: 0
+          description: total number of pages available
+      description: page object
+    PageNumber:
+      type: integer
+      format: int32
+      default: 0
+      minimum: 0
+      description: current page number
+    PageSize:
+      type: integer
+      format: int32
+      default: 20
+      minimum: 1
+      description: page size
+    Href:
+      type: object
+      required:
+        - href
+      properties:
+        href:
+          type: string
+          format: url
+          readOnly: true
+      description: HAL href url
+  responses:
+    NotModified:
+      description: Not Modified
+    BadRequestError:
+      description: Bad request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFoundError:
+      description: The specified resource was not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnauthorizedError:
+      description: Authentication information is missing or invalid
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+      headers:
+        WWW_Authenticate:
+          schema:
+            type: string
+    ForbiddenError:
+      description: User doesn't have permission to the requested resource
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    PreconditionFailedError:
+      description: Resource was updated by another user
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    PreconditionRequiredError:
+      description: If-Match header is missing
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnexpectedError:
+      description: Unexpected Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  parameters:
+    contactId:
+      name: contactId
+      in: path
+      description: contact id to use
+      required: true
+      schema:
+        $ref: '#/components/schemas/ContactId'
+    skillId:
+      name: skillId
+      in: path
+      description: skill id to use
+      required: true
+      schema:
+        $ref: '#/components/schemas/SkillId'
+    page:
+      name: page
+      in: query
+      description: page number
+      schema:
+        $ref: '#/components/schemas/PageNumber'
+    limit:
+      name: limit
+      in: query
+      description: max records to return
+      schema:
+        $ref: '#/components/schemas/PageSize'
+    ifMatchContact:
+      in: header
+      name: If-Match
+      schema:
+        type: string
+      required: true
+      description: Etag header received by `GET /contacts/{contactId}` to handle optimistic concurrency control
+    ifMatchSkill:
+      in: header
+      name: If-Match
+      schema:
+        type: string
+      required: true
+      description: Etag header received by `GET /skills/{skillId}` to handle optimistic concurrency control
+    IfNoneMatch:
+      in: header
+      name: If-None-Match
+      schema:
+        type: string
+      description: Etag header received by the previous call to the current resource to handle caching
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    JWTBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    OpenID:
+      type: openIdConnect
+      openIdConnectUrl: https://example.com/.well-known/openid-configuration
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read:contacts: Grants read access to contacts
+            write:contacts: Grants write access to contacts
+            read:skills: Grants read access to skills
+            write:skills: Grants write access to skills
+  links:
+    GetContact:
+      operationId: getContact
+      parameters:
+        contactId: '$response.body#/id'
+      description: >
+        The `id` value returned in the response can be used as the `contactId` parameter in `GET /contacts/{contactId}`.
+    UpdateContact:
+      operationId: updateContact
+      parameters:
+        contactId: '$response.body#/id'
+      description: >
+        The `id` value returned in the response can be used as the `contactId` parameter in `PUT /contacts/{contactId}`.
+    DeleteContact:
+      operationId: deleteContact
+      parameters:
+        contactId: '$response.body#/id'
+      description: >
+        The `id` value returned in the response can be used as the `contactId` parameter in `DELETE /contacts/{contactId}`.
+    RemoveSkillFromContact:
+      operationId: removeSkillFromContact
+      parameters:
+        contactId: '$request.path.contactId'
+        skillId: '$request.path.skillId'
+      description: >
+        The `contactId` and `skillId` in the request path params can be used in `DELETE /contacts/{contactId}/skills/{skillId}`.
+    AddSkillToContact:
+      operationId: addSkillToContact
+      parameters:
+        contactId: '$request.path.contactId'
+        skillId: '$request.path.skillId'
+      description: >
+        The `contactId` and `skillId` in the request path params can be used in `PUT /contacts/{contactId}/skills/{skillId}`.
+    GetSkill:
+      operationId: getSkill
+      parameters:
+        skillId: '$response.body#/id'
+      description: >
+        The `id` value returned in the response can be used as parameter in `GET /skills/{skillId}`.
+    UpdateSkill:
+      operationId: updateSkill
+      parameters:
+        skillId: '$response.body#/id'
+      description: >
+        The `id` value returned in the response can be used as parameter in `PUT /skills/{skillId}`.
+    DeleteSkill:
+      operationId: deleteSkill
+      parameters:
+        skillId: '$response.body#/id'
+      description: >
+        The `id` value returned in the response can be used as parameter in `DELETE /skills/{skillId}`.
+tags:
+  - name: contact
+    description: Contact operations
+    externalDocs:
+      description: Find more info here
+      url: https://wiki.example.com
+  - name: skill
+    description: Skill operations
+    externalDocs:
+      description: Find more info here
+      url: https://wiki.example.com
