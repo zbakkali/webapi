@@ -124,11 +124,13 @@ paths:
             minimum: 1
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/IfNoneMatch'
+        - $ref: '#/components/parameters/ifNoneMatch'
       security:
         - BasicAuth: []
         - OpenID:
             - read:contacts
+    parameters:
+      - $ref: '#/components/parameters/authorization'
   /contacts/{contactId}:
     get:
       tags:
@@ -170,7 +172,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
       parameters:
-        - $ref: '#/components/parameters/IfNoneMatch'
+        - $ref: '#/components/parameters/ifNoneMatch'
       security:
         - BasicAuth: []
         - OpenID:
@@ -264,6 +266,7 @@ paths:
             - read:contacts
     parameters:
       - $ref: '#/components/parameters/contactId'
+      - $ref: '#/components/parameters/authorization'
   /contacts/{contactId}/skills/{skillId}:
     put:
       tags:
@@ -367,6 +370,7 @@ paths:
     parameters:
       - $ref: '#/components/parameters/contactId'
       - $ref: '#/components/parameters/skillId'
+      - $ref: '#/components/parameters/authorization'
   /skills:
     post:
       tags:
@@ -456,11 +460,13 @@ paths:
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/IfNoneMatch'
+        - $ref: '#/components/parameters/ifNoneMatch'
       security:
         - BasicAuth: []
         - OpenID:
             - read:skills
+    parameters:
+      - $ref: '#/components/parameters/authorization'
   /skills/{skillId}:
     get:
       tags:
@@ -502,7 +508,7 @@ paths:
         default:
           $ref: '#/components/responses/UnexpectedError'
       parameters:
-        - $ref: '#/components/parameters/IfNoneMatch'
+        - $ref: '#/components/parameters/ifNoneMatch'
       security:
         - BasicAuth: []
         - OpenID:
@@ -594,6 +600,7 @@ paths:
             - read:skills
     parameters:
       - $ref: '#/components/parameters/skillId'
+      - $ref: '#/components/parameters/authorization'
 components:
   schemas:
     ContactId:
@@ -626,7 +633,7 @@ components:
         email:
           type: string
           format: email
-          pattern: '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$'
+          pattern: '\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b'
           minLength: 3
           maxLength: 320
       description: Contact with simple fields
@@ -964,6 +971,14 @@ components:
       description: max records to return
       schema:
         $ref: '#/components/schemas/PageSize'
+    authorization:
+      in: header
+      name: Authorization
+      schema:
+        type: string
+      required: true
+      example: Bearer $TOKEN
+      description: Bearer authentication token with a value with the pattern "Bearer $TOKEN"
     ifMatchContact:
       in: header
       name: If-Match
@@ -978,7 +993,7 @@ components:
         type: string
       required: true
       description: Etag header received by `GET /skills/{skillId}` to handle optimistic concurrency control
-    IfNoneMatch:
+    ifNoneMatch:
       in: header
       name: If-None-Match
       schema:

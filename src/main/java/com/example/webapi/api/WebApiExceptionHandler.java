@@ -15,7 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class WebApiExceptionHandler extends ResponseEntityExceptionHandler {
 
-    /*@ExceptionHandler(value = AbstractNotFoundException.class)
+    @ExceptionHandler(value = AbstractNotFoundException.class)
     protected ResponseEntity<Object> handleNotFoundException(AbstractNotFoundException e, WebRequest request) {
         ErrorDto error = new ErrorDto()
                 .status(HttpStatus.NOT_FOUND.value())
@@ -29,7 +29,7 @@ public class WebApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .detail(e.getMessage());
         return handleExceptionInternal(e, error, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
-    }*/
+    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handle(HttpMessageNotReadableException e) {

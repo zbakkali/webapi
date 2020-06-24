@@ -14,7 +14,7 @@ plugins {
     groovy
 
     // Apply Spring Boot Gradle Plugin to provide Spring Boot support
-    id("org.springframework.boot") version "2.3.0.RELEASE"
+    id("org.springframework.boot") version "2.3.1.RELEASE"
 
     // Apply OpenAPI Generator Plugin to generate API server stubs, documentation and configuration automatically given an OpenAPI Spec v3
     id("org.openapi.generator") version "4.3.1"
@@ -39,7 +39,16 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    // Add Keycloak Adapter BOM dependency
+    implementation(platform("org.keycloak.bom:keycloak-adapter-bom:10.0.2"))
+
+    implementation("org.keycloak:keycloak-spring-boot-starter") {
+        exclude(group = "org.springframework.boot",  module = "spring-boot-starter-tomcat")
+    }
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude(group = "org.springframework.boot",  module = "spring-boot-starter-tomcat")
+    }
+    implementation("org.springframework.boot:spring-boot-starter-undertow")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -50,9 +59,12 @@ dependencies {
     implementation("org.openapitools:jackson-databind-nullable:0.2.1")
     implementation("org.mapstruct:mapstruct:1.3.1.Final")
 
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
     runtimeOnly("com.h2database:h2")
 
     annotationProcessor("org.mapstruct:mapstruct-processor:1.3.1.Final")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
     testImplementation("org.springframework.security:spring-security-test")
     // Use the latest Groovy version for Spock testing
@@ -61,7 +73,7 @@ dependencies {
     testImplementation("org.spockframework:spock-core:1.3-groovy-2.5")
     testImplementation("org.spockframework:spock-spring:1.3-groovy-2.5")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
-        exclude(group="org.junit.vintage", module="junit-vintage-engine")
+        exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
     testImplementation("org.springframework.security:spring-security-test")
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
+@Table(uniqueConstraints={@UniqueConstraint(columnNames={"NUMBER", "LABEL"})})
 @Data
 @Builder
 @NoArgsConstructor

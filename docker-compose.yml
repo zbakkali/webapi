@@ -3,4 +3,22 @@ services:
   webapi:
     build: .
     ports:
+      - "8081:8080"
+    networks:
+      - frontend
+  authorizationserver:
+    image: quay.io/keycloak/keycloak:10.0.2
+    environment:
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_IMPORT: /tmp/keycloak-realm.json
+    volumes:
+      - "./keycloak-realm.json:/tmp/keycloak-realm.json"
+    ports:
       - "8080:8080"
+    networks:
+      frontend:
+        aliases:
+          - authorizationserver
+networks:
+  frontend:

@@ -28,19 +28,19 @@ public class SkillApiDelegateImpl implements SkillApiDelegate {
     }
 
     @Override
-    public ResponseEntity<HALSkillDto> createSkill(SkillDto skillDto) {
+    public ResponseEntity<HALSkillDto> createSkill(String authorization, SkillDto skillDto) {
         Skill skill = skillService.createSkill(skillMapper.dtoToEntity(skillDto));
         return new ResponseEntity<>(skillMapper.entityToDto(skill), HttpStatus.CREATED);
     }
 
     @Override
-    public ResponseEntity<Void> deleteSkillById(Long skillId, String ifMatch) {
+    public ResponseEntity<Void> deleteSkillById(Long skillId, String authorization, String ifMatch) {
         skillService.deleteSkill(skillId);
         return ResponseEntity.noContent().build();
     }
 
     @Override
-    public ResponseEntity<HALSkillsDto> findAllSkills(Integer limit, Integer page, String ifNoneMatch) {
+    public ResponseEntity<HALSkillsDto> findAllSkills(String authorization, Integer limit, Integer page, String ifNoneMatch) {
             List<HALSkillDto> skills = skillService.findAllSkills(PageRequest.of(page, limit))
                 .getContent()
                 .stream()
@@ -54,13 +54,13 @@ public class SkillApiDelegateImpl implements SkillApiDelegate {
     }
 
     @Override
-    public ResponseEntity<HALSkillDto> getSkillById(Long skillId, String ifNoneMatch) {
+    public ResponseEntity<HALSkillDto> getSkillById(Long skillId, String authorization, String ifNoneMatch) {
         Optional<HALSkillDto> halSkillDto = skillService.findSkillById(skillId).map(skillMapper::entityToDto);
         return ResponseEntity.of(halSkillDto);
     }
 
     @Override
-    public ResponseEntity<HALSkillDto> updateSkillById(Long skillId, String ifMatch, SkillDto skillDto) {
+    public ResponseEntity<HALSkillDto> updateSkillById(Long skillId, String authorization, String ifMatch, SkillDto skillDto) {
         skillDto.setId(skillId);
         Skill skill = skillService.updateSkill(skillMapper.dtoToEntity(skillDto));
         return ResponseEntity.ok(skillMapper.entityToDto(skill));

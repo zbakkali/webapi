@@ -1,2 +1,8 @@
 management.endpoints.web.exposure.include: "*"
 logging.level.root: INFO
+keycloak:
+  auth-server-url: http://authorizationserver:8080/auth
+  realm: ContactsApiRealm
+  resource: contacts-api-client
+  public-client: true
+  principal-attribute: preferred_username
