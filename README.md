@@ -20,7 +20,7 @@ Implemented with API-First Approach
 - H2 as embedded Database
 - Docker
 - Docker Compose
-- Keycloak as authorization server
+- Keycloak as an authorization server
 
 ## Installation
 Add "authorizationserver" entry in your hosts file
@@ -38,7 +38,7 @@ docker-compose up
 http://localhost:8081
 
 ### Authentication
-Get an temporary token from the the authentication server and store it in an environment variable TOKEN
+Get an temporary token from the authentication server and store it in an environment variable TOKEN
 
 ```bash
  export TOKEN=`curl -ss --data "grant_type=password&client_id=contacts-api-client&username=user1&password=user1" http://authorizationserver:8080/auth/realms/ContactsApiRealm/protocol/openid-connect/token | jq -r .access_token`
